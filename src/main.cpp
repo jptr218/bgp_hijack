@@ -49,7 +49,7 @@ int main(int argc, char* argv[]) {
 		cout << endl << "Failed to send BGP packet. Are you sure that you've specified the correct interface?" << endl;
 		return 0;
 	}
-	seq += 42;
+	seq += 46;
 
 	cout << endl << "Press CTRL+C to stop" << endl;
 

