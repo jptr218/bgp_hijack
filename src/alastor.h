@@ -17,10 +17,13 @@
 
 using namespace std;
 
+struct iface {
+	string name;
+	uint8_t ip[4];
+};
+
 USHORT checksum(USHORT* buffer, int size);
 void strToIp(const char* s, uint8_t* ip);
-vector<string> getDevices();
+vector<iface> getDevices();
 
-bool open_conn(pcap_t* handle, uint8_t* target, uint8_t* ndest, uint8_t* gateway, uint32_t seq);
-bool hijack(pcap_t* handle, uint8_t* target, uint8_t* odest, uint8_t* ndest, uint8_t* gateway, uint32_t seq);
-bool keepalive(pcap_t* handle, uint8_t* target, uint8_t* ndest, uint8_t* gateway, uint32_t seq);
+bool hijack(pcap_t* handle, uint8_t* target, uint8_t* odest, uint8_t* lip, uint16_t asn, uint8_t* gateway, uint32_t seq);
