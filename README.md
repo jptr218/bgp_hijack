@@ -2,4 +2,4 @@
 ## Alastor can be downloaded [here](https://github.com/jptr218/alastor/raw/main/alastor.exe) (you will need to run it from the command line)
 ### Usage:
 
-### `alastor [target BGP speaker] [old destination] [current ASN] [current TCP sequence number]`
+### `alastor [target BGP router] [old destination] [current ASN] [current TCP sequence number]`
