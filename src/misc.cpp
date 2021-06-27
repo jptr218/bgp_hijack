@@ -38,8 +38,8 @@ void strToIp(const char* s, uint8_t* ip) {
 	ip[op] = oi;
 }
 
-vector<string> getDevices() {
-	vector<string> o;
+vector<iface> getDevices() {
+	vector<iface> o;
 	pcap_if_t* d;
 	char errbuf[PCAP_ERRBUF_SIZE];
 
@@ -50,7 +50,14 @@ vector<string> getDevices() {
 	}
 
 	for (; d != nullptr; d = d->next) {
-		o.push_back(d->name);
+		iface i;
+		i.name = string(d->name);
+		for (pcap_addr_t* a = d->addresses; a != NULL; a = a->next) {
+			if (a->addr->sa_family == AF_INET) {
+				strToIp(inet_ntoa(((struct sockaddr_in*)a->addr)->sin_addr), i.ip);
+			}
+		}
+		o.push_back(i);
 	}
 
 	return o;
